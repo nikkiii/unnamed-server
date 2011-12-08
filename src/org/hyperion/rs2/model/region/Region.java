@@ -6,8 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.hyperion.rs2.model.GameObject;
+import org.hyperion.rs2.model.Location;
 import org.hyperion.rs2.model.NPC;
 import org.hyperion.rs2.model.Player;
+import org.hyperion.util.Filter;
 
 /**
  * Represents a single region.
@@ -73,6 +75,57 @@ public class Region {
 	}
 	
 	/**
+	 * Get an object, matching to the filter specifications
+	 * 
+	 * @param filter
+	 *            The filter to check vs objects
+	 * @return The object if found
+	 */
+	public GameObject getObject(Filter<GameObject> filter) {
+		for (GameObject object : objects) {
+			if (filter.accept(object)) {
+				return object;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get an object by creating a filter to match id and location
+	 * 
+	 * @param id
+	 *            The id of the object
+	 * @param loc
+	 *            The location of the object
+	 * @return The object if found
+	 */
+	public GameObject getObject(final int id, final Location loc) {
+		return getObject(new Filter<GameObject>() {
+			@Override
+			public boolean accept(GameObject t) {
+				return t.getDefinition().getId() == id
+						&& t.getLocation().equals(loc);
+			}
+		});
+	}
+
+	/**
+	 * Get an object at the specified location
+	 * 
+	 * @param location
+	 *            The location
+	 * @return The object if found
+	 */
+	public GameObject getObjectAt(final Location location) {
+		return getObject(new Filter<GameObject>() {
+			@Override
+			public boolean accept(GameObject t) {
+				return t.getLocation().equals(location);
+			}
+		});
+	}
+	
+	/**
 	 * Gets the list of objects.
 	 * @return The list of objects.
 	 */
@@ -119,5 +172,4 @@ public class Region {
 			npcs.remove(npc);
 		}
 	}
-
 }

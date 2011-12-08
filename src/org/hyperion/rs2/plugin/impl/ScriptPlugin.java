@@ -53,7 +53,7 @@ public class ScriptPlugin extends Plugin {
 		}
 	}
 
-	/**
+	/** 
 	 * Unregister the factory extensions names and mime types by pointing them to a <code>null</code> object
 	 */
 	@Override

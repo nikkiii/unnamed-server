@@ -99,5 +99,21 @@ public class RequestManager {
 	public RequestManager(Player player) {
 		this.player = player;
 	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public RequestState getState() {
+		return state;
+	}
+
+	public RequestType getRequestType() {
+		return requestType;
+	}
+
+	public Player getAcquaintance() {
+		return acquaintance;
+	}
 	
 }

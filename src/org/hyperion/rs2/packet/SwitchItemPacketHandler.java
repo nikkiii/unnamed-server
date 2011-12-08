@@ -7,8 +7,9 @@ import org.hyperion.rs2.net.Packet;
 
 /**
  * Switch item packet handler.
+ * 
  * @author Graham Edgecombe
- *
+ * 
  */
 public class SwitchItemPacketHandler implements PacketHandler {
 
@@ -18,17 +19,19 @@ public class SwitchItemPacketHandler implements PacketHandler {
 		packet.getByteC();
 		int fromSlot = packet.getLEShortA();
 		int toSlot = packet.getLEShort();
-		
-		switch(interfaceId) {
+
+		switch (interfaceId) {
 		case Bank.PLAYER_INVENTORY_INTERFACE:
 		case Inventory.INTERFACE:
-			if(fromSlot >= 0 && fromSlot < Inventory.SIZE && toSlot >= 0 && toSlot < Inventory.SIZE && toSlot != fromSlot) {
+			if (fromSlot >= 0 && fromSlot < Inventory.SIZE && toSlot >= 0
+					&& toSlot < Inventory.SIZE && toSlot != fromSlot) {
 				player.getInventory().swap(fromSlot, toSlot);
 			}
 			break;
 		case Bank.BANK_INVENTORY_INTERFACE:
-			if(fromSlot >= 0 && fromSlot < Bank.SIZE && toSlot >= 0 && toSlot < Bank.SIZE && toSlot != fromSlot) {
-				if(player.getSettings().isSwapping()) {
+			if (fromSlot >= 0 && fromSlot < Bank.SIZE && toSlot >= 0
+					&& toSlot < Bank.SIZE && toSlot != fromSlot) {
+				if (player.getSettings().isSwapping()) {
 					player.getBank().swap(fromSlot, toSlot);
 				} else {
 					player.getBank().insert(fromSlot, toSlot);

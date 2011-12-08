@@ -1,5 +1,8 @@
 package org.hyperion.rs2.net;
 
+import java.util.List;
+import java.util.Random;
+
 import org.hyperion.rs2.Constants;
 import org.hyperion.rs2.model.Item;
 import org.hyperion.rs2.model.Palette;
@@ -318,6 +321,68 @@ public class ActionSender {
 		PacketBuilder bldr = new PacketBuilder(246);
 		bldr.putLEShort(id).putShort(zoom).putShort(model);
 		player.write(bldr.toPacket());
+		return this;
+	}
+	/**
+	 * Send the friends list status
+	 * 
+	 * @param i
+	 *            0 = connecting, 1 = connected?
+	 * @return The action sender instance, for chaining.
+	 */
+	public ActionSender sendFriendStatus(int i) {
+		player.write(new PacketBuilder(221).put((byte) i).toPacket());
+		return this;
+	}
+
+	/**
+	 * Send the status of a friend in a list
+	 * 
+	 * @param name
+	 *            The player's name in a long
+	 * @param world
+	 *            The player's current world
+	 * @return The action sender instance, for chaining.
+	 */
+	public ActionSender sendFriendStatus(long name, int world) {
+		player.write(new PacketBuilder(50).putLong(name).put((byte) world)
+				.toPacket());
+		return this;
+	}
+
+	/**
+	 * Send the status of a friend in a list
+	 * 
+	 * @param name
+	 *            The player's name in a long
+	 * @param world
+	 *            The player's current world
+	 * @return The action sender instance, for chaining.
+	 */
+	public ActionSender sendPrivateMessage(long from, int rights,
+			byte[] message, int size) {
+		PacketBuilder bldr = new PacketBuilder(196, Type.VARIABLE);
+		bldr.putLong(from).putInt((byte) new Random().nextInt())
+				.put((byte) rights).put(message);
+		player.write(bldr.toPacket());
+		return this;
+	}
+
+	/**
+	 * Send the ignore list of a player
+	 * 
+	 * @param name
+	 *            The player's name in a long
+	 * @param world
+	 *            The player's current world
+	 * @return The action sender instance, for chaining.
+	 */
+	public ActionSender sendIgnores(List<Long> ignores) {
+		PacketBuilder pb = new PacketBuilder(214, Type.VARIABLE_SHORT);
+		for (long name : ignores) {
+			pb.putLong((byte) name);
+		}
+		player.write(pb.toPacket());
 		return this;
 	}
 }

@@ -1,5 +1,8 @@
 package org.hyperion.rs2.packet;
 
+import org.hyperion.rs2.gameevent.ConsumerInterruptor;
+import org.hyperion.rs2.gameevent.EventProducer;
+import org.hyperion.rs2.gameevent.impl.CommandEvent;
 import org.hyperion.rs2.model.Animation;
 import org.hyperion.rs2.model.Graphic;
 import org.hyperion.rs2.model.Item;
@@ -21,13 +24,19 @@ import org.hyperion.rs2.pf.TileMapBuilder;
  * @author Graham Edgecombe
  *
  */
-public class CommandPacketHandler implements PacketHandler {
+public class CommandPacketHandler extends EventProducer implements PacketHandler {
 
 	@Override
 	public void handle(Player player, Packet packet) {
 		String commandString = packet.getRS2String();
 		String[] args = commandString.split(" ");
 		String command = args[0].toLowerCase();
+		try {
+			produce(new CommandEvent(player, commandString));
+		} catch(ConsumerInterruptor e) {
+			//A plugin handled it
+			return;
+		}
 		try {
 			if(command.equals("tele")) {
 				if(args.length == 3 || args.length == 4) {

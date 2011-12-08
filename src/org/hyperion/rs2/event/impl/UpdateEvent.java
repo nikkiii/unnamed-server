@@ -17,6 +17,7 @@ import org.hyperion.rs2.task.impl.NPCUpdateTask;
 import org.hyperion.rs2.task.impl.PlayerResetTask;
 import org.hyperion.rs2.task.impl.PlayerTickTask;
 import org.hyperion.rs2.task.impl.PlayerUpdateTask;
+import org.hyperion.rs2.tickable.Tickable;
 
 /**
  * An event which starts player update tasks.
@@ -39,6 +40,15 @@ public class UpdateEvent extends Event {
 
 	@Override
 	public void execute() {
+		Iterator<Tickable> tickIterator = World.getWorld().getTickableManager().getTickables().iterator();
+		while(tickIterator.hasNext()) {
+			Tickable tickable = tickIterator.next();
+			tickable.cycle();
+			if(!tickable.isRunning()) {
+				tickIterator.remove();
+			}
+		}
+		
 		List<Task> tickTasks = new ArrayList<Task>();
 		List<Task> updateTasks = new ArrayList<Task>();
 		List<Task> resetTasks = new ArrayList<Task>();

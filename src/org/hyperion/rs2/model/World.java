@@ -1,5 +1,6 @@
 package org.hyperion.rs2.model;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,14 +20,19 @@ import org.hyperion.rs2.event.Event;
 import org.hyperion.rs2.event.EventManager;
 import org.hyperion.rs2.event.impl.CleanupEvent;
 import org.hyperion.rs2.event.impl.UpdateEvent;
+import org.hyperion.rs2.gameevent.EventProducer;
+import org.hyperion.rs2.gameevent.impl.PlayerLoginEvent;
 import org.hyperion.rs2.login.LoginServerConnector;
 import org.hyperion.rs2.login.LoginServerWorldLoader;
 import org.hyperion.rs2.model.region.RegionManager;
 import org.hyperion.rs2.net.PacketBuilder;
 import org.hyperion.rs2.net.PacketManager;
 import org.hyperion.rs2.packet.PacketHandler;
+import org.hyperion.rs2.plugin.PluginLoader;
 import org.hyperion.rs2.task.Task;
 import org.hyperion.rs2.task.impl.SessionLoginTask;
+import org.hyperion.rs2.tickable.Tickable;
+import org.hyperion.rs2.tickable.TickableManager;
 import org.hyperion.rs2.util.ConfigurationParser;
 import org.hyperion.rs2.util.EntityList;
 import org.hyperion.rs2.util.NameUtils;
@@ -103,6 +109,16 @@ public class World {
 	private RegionManager regionManager = new RegionManager();
 	
 	/**
+	 * The tickable manager
+	 */
+	private TickableManager tickManager;
+	
+	/**
+	 * The login producer...
+	 */
+	private EventProducer loginProducer = new EventProducer();
+	
+	/**
 	 * Creates the world and begins background loading tasks.
 	 */
 	public World() {
@@ -163,6 +179,7 @@ public class World {
 		} else {
 			this.engine = engine;
 			this.eventManager = new EventManager(engine);
+			this.tickManager = new TickableManager();
 			this.registerGlobalEvents();
 			this.loadConfiguration();
 		}
@@ -188,6 +205,12 @@ public class World {
 			} else {
 				this.loader = new GenericWorldLoader();
 				logger.fine("WorldLoader set to default");
+			}
+			if(mappings.containsKey("pluginDirectory")) {
+				File directory = new File(mappings.get("pluginDirectory"));
+				if(directory.exists()) {
+					PluginLoader.getInstance().load(directory);
+				}
 			}
 			Map<String, Map<String, String>> complexMappings = p.getComplexMappings();
 			if(complexMappings.containsKey("packetHandlers")) {
@@ -228,6 +251,18 @@ public class World {
 	 */
 	public void submit(Event event) {
 		this.eventManager.submit(event);
+	}
+	
+	/**
+	 * Submits a new tickable
+	 * @param tickable The tickable to submit
+	 */
+	public void submit(final Tickable tickable) {
+		submit(new Task() {
+			public void execute(GameEngine context) {
+				World.this.tickManager.submit(tickable);
+			}
+		});
 	}
 	
 	/**
@@ -335,6 +370,7 @@ public class World {
 				if(fReturnCode != 2) {
 					player.getSession().close(false);
 				} else {
+					loginProducer.produce(new PlayerLoginEvent.PlayerLogin(player));
 					player.getActionSender().sendLogin();
 				}
 			}
@@ -353,11 +389,66 @@ public class World {
 	}
 	
 	/**
+	 * Finds a player by the specified name
+	 * 
+	 * @param name
+	 *            The name to format and match
+	 * @return The player instance if any, or null if not found
+	 */
+	public Player findPlayer(String name) {
+		name = NameUtils.formatName(name);
+		for (Player player : players) {
+			if (player.getName().equalsIgnoreCase(name)) {
+				return player;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Finds a player by the specified name long
+	 * 
+	 * @param name
+	 *            The name to match
+	 * @return The player instance if any, or null if not found
+	 */
+	public Player findPlayer(long name) {
+		for (Player player : players) {
+			if (player.getNameAsLong() == name) {
+				return player;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Get the player at the specified index
+	 * @param index
+	 * 			The index
+	 * @return
+	 * 			The player
+	 */
+	public Player getPlayer(int index) {
+		return (Player) players.get(index);
+	}
+	
+	/**
 	 * Gets the npc list.
 	 * @return The npc list.
 	 */
 	public EntityList<NPC> getNPCs() {
 		return npcs;
+	}
+	
+	/**
+	 * Get an NPC
+	 * @param index
+	 * 		The NPC's index
+	 * @return
+	 * 		The NPC
+	 */
+	public NPC getNPC(int index) {
+		return (NPC) npcs.get(index);
 	}
 	
 	/**
@@ -388,6 +479,7 @@ public class World {
 		engine.submitWork(new Runnable() {
 			public void run() {
 				loader.savePlayer(player);
+				loginProducer.produce(new PlayerLoginEvent.PlayerLogout(player));
 				if(World.getWorld().getLoginServerConnector() != null) {
 					World.getWorld().getLoginServerConnector().disconnected(player.getName());
 				}
@@ -403,6 +495,15 @@ public class World {
 		logger.severe("An error occurred in an executor service! The server will be halted immediately.");
 		t.printStackTrace();
 		System.exit(1);
+	}
+
+	/**
+	 * Get the tickable manager
+	 * @return
+	 * 		The tickable manager
+	 */
+	public TickableManager getTickableManager() {
+		return tickManager;
 	}
 	
 }

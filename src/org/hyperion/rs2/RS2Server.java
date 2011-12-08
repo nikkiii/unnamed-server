@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.filter.firewall.ConnectionThrottleFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.hyperion.rs2.model.World;
 import org.hyperion.rs2.script.FileScriptManager;

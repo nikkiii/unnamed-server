@@ -3,14 +3,15 @@ package org.hyperion.rs2.packet;
 import org.hyperion.rs2.model.Item;
 import org.hyperion.rs2.model.Player;
 import org.hyperion.rs2.model.container.Equipment;
-import org.hyperion.rs2.model.container.Inventory;
 import org.hyperion.rs2.model.container.Equipment.EquipmentType;
+import org.hyperion.rs2.model.container.Inventory;
 import org.hyperion.rs2.net.Packet;
 
 /**
  * Handles the 'wield' option on items.
+ * 
  * @author Graham Edgecombe
- *
+ * 
  */
 public class WieldPacketHandler implements PacketHandler {
 
@@ -20,23 +21,25 @@ public class WieldPacketHandler implements PacketHandler {
 		int slot = packet.getShortA() & 0xFFFF;
 		int interfaceId = packet.getShortA() & 0xFFFF;
 
-		switch(interfaceId) {
+		switch (interfaceId) {
 		case Inventory.INTERFACE:
-			if(slot >= 0 && slot < Inventory.SIZE) {
+			if (slot >= 0 && slot < Inventory.SIZE) {
 				Item item = player.getInventory().get(slot);
-				if(item != null && item.getId() == id) {
+				if (item != null && item.getId() == id) {
+					//TODO requirements
 					EquipmentType type = Equipment.getType(item);
 					Item oldEquip = null;
 					boolean stackable = false;
-					if(player.getEquipment().isSlotUsed(type.getSlot()) && !stackable) {
+					if (player.getEquipment().isSlotUsed(type.getSlot())
+							&& !stackable) {
 						oldEquip = player.getEquipment().get(type.getSlot());
 						player.getEquipment().set(type.getSlot(), null);
 					}
 					player.getInventory().set(slot, null);
-					if(oldEquip != null) {
+					if (oldEquip != null) {
 						player.getInventory().add(oldEquip);
 					}
-					if(!stackable) {
+					if (!stackable) {
 						player.getEquipment().set(type.getSlot(), item);
 					} else {
 						player.getEquipment().add(item);

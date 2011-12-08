@@ -8,6 +8,8 @@ import org.apache.mina.core.session.IoSession;
 import org.hyperion.data.Persistable;
 import org.hyperion.rs2.action.ActionQueue;
 import org.hyperion.rs2.action.impl.AttackAction;
+import org.hyperion.rs2.content.chat.FriendsList;
+import org.hyperion.rs2.content.chat.IgnoreList;
 import org.hyperion.rs2.event.impl.DeathEvent;
 import org.hyperion.rs2.model.UpdateFlags.UpdateFlag;
 import org.hyperion.rs2.model.container.Bank;
@@ -224,6 +226,16 @@ public class Player extends Entity implements Persistable {
 	 * The cached update block.
 	 */
 	private Packet cachedUpdateBlock;
+
+	/**
+	 * The player's friends list
+	 */
+	private FriendsList friendsList;
+
+	/**
+	 * The player's ignore list
+	 */
+	private IgnoreList ignoreList;
 	
 	/**
 	 * Creates a player based on the details object.
@@ -240,6 +252,8 @@ public class Player extends Entity implements Persistable {
 		this.uid = details.getUID();
 		this.getUpdateFlags().flag(UpdateFlag.APPEARANCE);
 		this.setTeleporting(true);
+		this.friendsList = new FriendsList(this);
+		this.ignoreList = new IgnoreList(this);
 	}
 	
 	/**
@@ -673,6 +687,14 @@ public class Player extends Entity implements Persistable {
 	public void inflictDamage(int damage, HitType type) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public FriendsList getFriendsList() {
+		return friendsList;
+	}
+
+	public IgnoreList getIgnoreList() {
+		return ignoreList;
 	}
 	
 }
