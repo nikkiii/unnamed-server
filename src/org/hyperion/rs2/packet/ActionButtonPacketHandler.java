@@ -21,7 +21,7 @@ public class ActionButtonPacketHandler extends EventProducer implements
 
 		// First send to the consumers, see if they want the event
 		try {
-			produce(new ActionButtonEvent(player, button));
+			produce(new ActionButtonEvent(player, button), true);
 		} catch (ConsumerInterruptor e) {
 			// If they do, they will interrupt the chain
 			return;

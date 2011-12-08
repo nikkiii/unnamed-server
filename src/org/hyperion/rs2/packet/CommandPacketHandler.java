@@ -32,7 +32,7 @@ public class CommandPacketHandler extends EventProducer implements PacketHandler
 		String[] args = commandString.split(" ");
 		String command = args[0].toLowerCase();
 		try {
-			produce(new CommandEvent(player, commandString));
+			produce(new CommandEvent(player, commandString), true);
 		} catch(ConsumerInterruptor e) {
 			//A plugin handled it
 			return;

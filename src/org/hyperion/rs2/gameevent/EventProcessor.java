@@ -49,12 +49,15 @@ public class EventProcessor {
 	 * @param event
 	 *            The event to broadcast
 	 */
-	protected void broadcast(Event event) {
+	protected void broadcast(Event event, boolean interrupt) {
 		for (EventConsumer consumer : getConsumersOf(event.getClass())) {
 			try {
 				consumer.consume(event);
 			} catch (ConsumerInterruptor i) {
-				break;
+				if(interrupt)
+					throw i;
+				else
+					break;
 			} catch (Exception ex) {
 				logger.log(Level.WARNING,
 						"Exception thrown while firing event.", ex);
